@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Creator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        #popup a {
+            display: block;
+            margin: 10px 0;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        #popup a:hover {
+            text-decoration: underline;
+        }
+
+        #popup button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create a Page</h1>
+        <form id="createPageForm">
+            <label for="file_name">File Name (without .html):</label>
+            <input type="text" name="file_name" id="file_name" required>
+
+            <label for="file_content">HTML, CSS, JS Code:</label>
+            <textarea name="file_content" id="file_content" rows="10" required></textarea>
+
+            <button type="submit">Create Page</button>
+        </form>
+    </div>
+
+    <div id="popup">
+        <p id="popupMessage"></p>
+        <a id="fileLink" href="#" target="_blank"></a>
+        <button id="copyButton">Copy Link</button>
+        <button onclick="closePopup()">Close</button>
+    </div>
+
+    <script>
+        const form = document.getElementById('createPageForm');
+        const popup = document.getElementById('popup');
+        const popupMessage = document.getElementById('popupMessage');
+        const fileLink = document.getElementById('fileLink');
+        const copyButton = document.getElementById('copyButton');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fileName = document.getElementById('file_name').value.trim();
+            const fileContent = document.getElementById('file_content').value;
+
+            // Encode file_content for URL
+            const encodedContent = encodeURIComponent(fileContent);
+            const apiUrl = `https://xmod.top/api.php?file_name=${fileName}&file_content=${encodedContent}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                popupMessage.textContent = data.message;
+                if (data.status === 'success') {
+                    fileLink.href = data.file_url;
+                    fileLink.textContent = data.file_url;
+                    copyButton.style.display = 'block';
+                } else {
+                    fileLink.style.display = 'none';
+                    copyButton.style.display = 'none';
+                }
+                popup.style.display = 'block';
+            } catch (error) {
+                popupMessage.textContent = 'Error connecting to the API.';
+                fileLink.style.display = 'none';
+                copyButton.style.display = 'none';
+                popup.style.display = 'block';
+            }
+        });
+
+        copyButton.addEventListener('click', () => {
+            const url = fileLink.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy link.');
+            });
+        });
+
+        function closePopup() {
+            popup.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
